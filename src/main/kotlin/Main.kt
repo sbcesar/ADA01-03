@@ -1,5 +1,9 @@
 package org.example
 
+fun fileReader() {
+
+}
+
 fun main() {
-    println("Hello World!")
+
 }
