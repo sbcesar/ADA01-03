@@ -1,5 +1,6 @@
 package org.example
 
+import org.example.Model.Employee
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -16,27 +17,6 @@ bibliotecas javax.xml.* org.w3c.*
 manejo de excepciones
 cerrar flujos
  */
-
-fun fileReader(employeesFile: Path): List<Employee> {
-    val employeeList = mutableListOf<Employee>()
-
-    var isFirstLine = true
-
-    val bufferedReader = Files.newBufferedReader(employeesFile)
-    bufferedReader.use { br ->
-        br.forEachLine { line ->
-            if (isFirstLine) {
-                line.split(",")
-                isFirstLine = false
-            } else {
-                val employeeInfo = line.split(",")
-                for (i in employeeInfo.indices) {
-                    val employee = Employee(employeeInfo[i])
-                }
-            }
-        }
-    }
-}
 
 fun main() {
 

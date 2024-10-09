@@ -1,4 +1,4 @@
-package org.example
+package org.example.Model
 
 data class Employee(
     val ID: Int,
