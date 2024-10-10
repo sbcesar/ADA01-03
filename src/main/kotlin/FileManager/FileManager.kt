@@ -7,12 +7,13 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.transform.OutputKeys
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
 
 class FileManager(
-    val console: IConsole
+    private val console: IConsole
 ) {
 
     fun fileReader(employeesFile: Path): List<Employee> {
@@ -39,63 +40,69 @@ class FileManager(
         return employeeList
     }
 
-    fun verifyAndCreateXML(directory: String) {
-        val path: Path = Path.of(directory)
-
-
-        if (!Files.exists(path)) {
+    fun verifyAndCreateXML(directory: Path) {
+        if (!Files.exists(directory)) {
             try {
-                Files.createDirectories(path)
+                Files.createDirectories(directory)
             } catch (e: Exception) {
                 console.showMessage("Error creating directory ${e.message}")
             }
         }
     }
 
-    fun createXmlFile(file: String): Document {
-        val docFactory = DocumentBuilderFactory.newInstance().newDocumentBuilder()
-        return docFactory.newDocument()
+     fun createXml(destinationFile: Path, employeeList: List<Employee>) {
+        val factory = DocumentBuilderFactory.newInstance()
+        val builder = factory.newDocumentBuilder()
+        val impl = builder.domImplementation
+
+        val document = impl.createDocument(null, "empleados", null)
+
+        for (employee in employeeList) {
+            val employeeElement = document.createElement("empleado")
+            employeeElement.setAttribute("id", employee.ID.toString())
+            document.documentElement.appendChild(employeeElement)
+
+            val surnameElement = document.createElement("apellido")
+            val departmentElement  = document.createElement("departamento")
+            val salaryElement  = document.createElement("salario")
+
+            val surnameText = document.createTextNode(employee.surname)
+            val departmentText = document.createTextNode(employee.department)
+            val salaryText = document.createTextNode(employee.salary.toString())
+
+            surnameElement.appendChild(surnameText)
+            departmentElement.appendChild(departmentText)
+            salaryElement.appendChild(salaryText)
+
+            employeeElement.appendChild(surnameElement)
+            employeeElement.appendChild(departmentElement)
+            employeeElement.appendChild(salaryElement)
+        }
+
+        val transformer = TransformerFactory.newInstance().newTransformer()
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes")
+
+        val source = DOMSource(document)
+        val result = StreamResult(destinationFile.toFile())
+        transformer.transform(source,result)
     }
 
-    fun xmlWriter(empleados: List<Employee>, archivoXml: String) {
+    fun editSalaryXml(employeeFile: Path, employeeId: Int, newSalary: Double) {
         try {
-            val doc: Document = createXmlFile(archivoXml)
+            val factory = DocumentBuilderFactory.newInstance()
+            val builder = factory.newDocumentBuilder()
+            val document = builder.parse(employeeFile.toFile())
 
-            val rootElement = doc.createElement("Empleados")
-            doc.appendChild(rootElement)
-
-            for (empleado in empleados) {
-                val empleadoElement = doc.createElement("Empleado")
-
-                val id = doc.createElement("ID")
-                id.appendChild(doc.createTextNode(empleado.ID.toString()))
-                empleadoElement.appendChild(id)
-
-                val apellido = doc.createElement("Apellido")
-                apellido.appendChild(doc.createTextNode(empleado.surname))
-                empleadoElement.appendChild(apellido)
-
-                val departamento = doc.createElement("Departamento")
-                departamento.appendChild(doc.createTextNode(empleado.department))
-                empleadoElement.appendChild(departamento)
-
-                val salario = doc.createElement("Salario")
-                salario.appendChild(doc.createTextNode(empleado.salary.toString()))
-                empleadoElement.appendChild(salario)
-
-                rootElement.appendChild(empleadoElement)
-            }
-
-            val transformer = TransformerFactory.newInstance().newTransformer()
-            val source = DOMSource(doc)
-            val result = StreamResult(File(archivoXml))
-            transformer.transform(source, result)
-
-            console.showMessage("XML file created sucessfully in: $archivoXml")
-
+            val employee = document.getElementsByTagName("empleado")
+            TODO("TERMINAR EL METODO, HACER BUCLE QUE RECORRA TODOS LOS EMPLEADOS PARA QUE ENCUENTRE EL ID, COMPRUEBE SI EL ATRIBUTO COINCIDE CON EL ID, IMPORTANTE GUARDAR CAMBIOS (TRANSFORMER)")
         } catch (e: Exception) {
-            console.showMessage("Error writing in the xml file ${e.message}")
+            console.showMessage("Error changing the salary of the employee n${employeeId}/nError: ${e.message}")
         }
     }
+
+    fun xmlReader() {
+
+    }
+
 
 }
