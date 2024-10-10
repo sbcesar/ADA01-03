@@ -18,6 +18,7 @@ manejo de excepciones
 cerrar flujos
  */
 
+//si el xml esta vacio que la ejecute y si no que no
 fun main() {
     val console = Console()
     val fileManager = FileManager(console)
@@ -25,13 +26,18 @@ fun main() {
     val employeeFile = Path.of("src/main/resources/employees.csv")
     val directory = Path.of("src/main/resources")
 
-    fileManager.verifyAndCreateXML(directory)
+    fileManager.verifyAndCreateDirectory(directory)
 
-    val employeeList = fileManager.fileReader(employeeFile)
+    val employeeList = fileManager.csvFileReader(employeeFile)
 
     val xmlFilePath = directory.resolve("empleados.xml")
 
+
     fileManager.createXml(xmlFilePath, employeeList)
 
-    fileManager.editSalaryXml(xmlFilePath,2,4876.45)
+    fileManager.editSalaryXml(xmlFilePath,employeeList)
+
+    fileManager.xmlReader(xmlFilePath)
+
+    fileManager.menu(xmlFilePath, directory)
 }
