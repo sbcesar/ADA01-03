@@ -17,34 +17,47 @@ class FileManager(
     private val console: IConsole
 ) {
 
-    fun menu(employeesFile: Path, directory: Path) {
-        console.showMessage("Choose an option: \n\t- 1. Create xml.\n\t- 2. Change salary by id")
-        val option = readln().toInt()
-        var firstTime = false
+    private var firstTime = true
 
-        when (option) {
-            1 -> {
-                verifyAndCreateDirectory(directory)     //Verify if the directory exist
-                val employeeList = csvFileReader(employeesFile)   //Read the csv and returns a list
-                createXml(employeesFile,employeeList)   //Create the xml with csv info
-            }
-            2 -> {
-                firstTime = true
-                val employeeListCsv = csvFileReader(employeesFile)
-                editSalaryXml(employeesFile,employeeListCsv)
-                if (firstTime == true) {
-                    val employeeListXml = xmlFileReader(employeesFile)
-                    editSalaryXml(employeesFile,xmlFileReader(employeesFile))
+    fun menu(employeesFileCsv: Path, employeesFileXml: Path, directory: Path) {
+        var menu = true
+
+        while (menu) {
+            console.showMessage("Choose an option: \n\t- 1. Create xml.\n\t- 2. Change salary by id.\n\t- 3. Mostrar info.\n\t- 4. Exit.")
+            val option = readln().toInt()
+
+            when (option) {
+                1 -> {
+                    verifyAndCreateDirectory(directory)     //Verify if the directory exist
+                    val employeeList = csvFileReader(employeesFileCsv)   //Read the csv and returns a list
+                    createXml(employeesFileXml,employeeList)   //Create the xml with csv info
                 }
-
-            }
-            else -> {
-                console.showMessage("Invalid option")
+                2 -> {
+                    val employeeList = if (firstTime) {
+                        val employeeListCsv = csvFileReader(employeesFileCsv)
+                        firstTime = false
+                        employeeListCsv
+                    } else {
+                        xmlFileReader(employeesFileXml)
+                    }
+                    editSalaryXml(employeesFileXml, employeeList)
+                }
+                3 -> {
+                    showXmlInfo(employeesFileXml)
+                }
+                4 -> {
+                    console.showMessage("Closing program...")
+                    menu = false
+                }
+                else -> {
+                    console.showMessage("Invalid option")
+                }
             }
         }
+
     }
 
-    fun csvFileReader(employeesFileCsv: Path): List<Employee> {
+    private fun csvFileReader(employeesFileCsv: Path): List<Employee> {
 
         val employeeList = mutableListOf<Employee>()
 
@@ -67,7 +80,7 @@ class FileManager(
         return employeeList
     }
 
-    fun xmlFileReader(employeesFileXml: Path): List<Employee> {
+    private fun xmlFileReader(employeesFileXml: Path): List<Employee> {
         val employeeList = mutableListOf<Employee>()
 
         val document = createDocument(employeesFileXml)
@@ -105,7 +118,7 @@ class FileManager(
         }
     }
 
-     fun createXml(employeesFile: Path, employeeList: List<Employee>) {
+     private fun createXml(employeesFile: Path, employeeList: List<Employee>) {
         val factory = DocumentBuilderFactory.newInstance()
         val builder = factory.newDocumentBuilder()
         val impl = builder.domImplementation
@@ -137,7 +150,7 @@ class FileManager(
         saveXml(document,employeesFile)
     }
 
-    fun editSalaryXml(employeesFile: Path, employeeList: List<Employee>) {
+    private fun editSalaryXml(employeesFile: Path, employeeList: List<Employee>) {
 
         console.showMessage("Introduce the employee's id that you want to change the salary: ")
         val employeeId = readln().toIntOrNull()
@@ -204,7 +217,7 @@ class FileManager(
         transformer.transform(source,result)
     }
 
-    fun xmlReader(employeesFile: Path) {
+    fun showXmlInfo(employeesFile: Path) {
         val document = createDocument(employeesFile)
 
         val employeeElement = document.documentElement
