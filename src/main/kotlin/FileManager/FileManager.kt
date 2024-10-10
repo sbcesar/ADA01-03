@@ -13,12 +13,29 @@ import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
 
+/**
+ * Manages file operations, including creating an XML file from CSV data,
+ * modifying employee salary, and displaying employee data.
+ *
+ * @property console Used to show messages to the user.
+ */
 class FileManager(
     private val console: IConsole
 ) {
 
     private var firstTime = true
 
+    /**
+     * Displays a menu with the following options:
+     * 1. Create XML from CSV.
+     * 2. Modify an employee's salary by their ID.
+     * 3. Show employee data from the XML.
+     * 4. Exit the program.
+     *
+     * @param employeesFileCsv Path to the CSV file containing employee data.
+     * @param employeesFileXml Path to the XML file where employee data is stored.
+     * @param directory Path to the directory where the XML will be created.
+     */
     fun menu(employeesFileCsv: Path, employeesFileXml: Path, directory: Path) {
         var menu = true
 
@@ -28,9 +45,9 @@ class FileManager(
 
             when (option) {
                 1 -> {
-                    verifyAndCreateDirectory(directory)     //Verify if the directory exist
-                    val employeeList = csvFileReader(employeesFileCsv)   //Read the csv and returns a list
-                    createXml(employeesFileXml,employeeList)   //Create the xml with csv info
+                    verifyAndCreateDirectory(directory)
+                    val employeeList = csvFileReader(employeesFileCsv)
+                    createXml(employeesFileXml,employeeList)
                 }
                 2 -> {
                     val employeeList = if (firstTime) {
@@ -57,6 +74,12 @@ class FileManager(
 
     }
 
+    /**
+     * Reads employee data from a CSV file.
+     *
+     * @param employeesFileCsv Path to the CSV file.
+     * @return List of employees read from the CSV.
+     */
     private fun csvFileReader(employeesFileCsv: Path): List<Employee> {
 
         val employeeList = mutableListOf<Employee>()
@@ -80,6 +103,12 @@ class FileManager(
         return employeeList
     }
 
+    /**
+     * Reads employee data from an XML file.
+     *
+     * @param employeesFileXml Path to the XML file.
+     * @return List of employees read from the XML.
+     */
     private fun xmlFileReader(employeesFileXml: Path): List<Employee> {
         val employeeList = mutableListOf<Employee>()
 
@@ -108,6 +137,11 @@ class FileManager(
         return employeeList
     }
 
+    /**
+     * Verifies if a directory exists, and creates it if not.
+     *
+     * @param directory Path to the directory.
+     */
     fun verifyAndCreateDirectory(directory: Path) {
         if (!Files.exists(directory)) {
             try {
@@ -118,6 +152,12 @@ class FileManager(
         }
     }
 
+    /**
+     * Creates an XML file from a list of employees.
+     *
+     * @param employeesFile Path to the XML file.
+     * @param employeeList List of employees to write to the XML.
+     */
      private fun createXml(employeesFile: Path, employeeList: List<Employee>) {
         val factory = DocumentBuilderFactory.newInstance()
         val builder = factory.newDocumentBuilder()
@@ -150,6 +190,12 @@ class FileManager(
         saveXml(document,employeesFile)
     }
 
+    /**
+     * Edits the salary of an employee in the XML file.
+     *
+     * @param employeesFile Path to the XML file.
+     * @param employeeList List of employees to search and modify.
+     */
     private fun editSalaryXml(employeesFile: Path, employeeList: List<Employee>) {
 
         console.showMessage("Introduce the employee's id that you want to change the salary: ")
@@ -199,6 +245,12 @@ class FileManager(
         }
     }
 
+    /**
+     * Creates a Document object from an XML file.
+     *
+     * @param employeesFile Path to the XML file.
+     * @return Parsed XML Document.
+     */
     private fun createDocument(employeesFile: Path): Document {
         val documentBuilderFactory = DocumentBuilderFactory.newInstance()
         val documentBuilder = documentBuilderFactory.newDocumentBuilder()
@@ -208,6 +260,12 @@ class FileManager(
         return document
     }
 
+    /**
+     * Saves a Document to an XML file.
+     *
+     * @param document The Document to save.
+     * @param employeesFile Path to the XML file.
+     */
     private fun saveXml(document: Document?, employeesFile: Path) {
         val source = DOMSource(document)
         val result = StreamResult(employeesFile.toFile())
@@ -217,7 +275,12 @@ class FileManager(
         transformer.transform(source,result)
     }
 
-    fun showXmlInfo(employeesFile: Path) {
+    /**
+     * Displays employee data stored in the XML file.
+     *
+     * @param employeesFile Path to the XML file.
+     */
+    private fun showXmlInfo(employeesFile: Path) {
         val document = createDocument(employeesFile)
 
         val employeeElement = document.documentElement
@@ -238,5 +301,4 @@ class FileManager(
             }
         }
     }
-
 }
